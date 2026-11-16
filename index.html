@@ -88,7 +88,7 @@ const OPT={lang:['Arabic','Darija','French','English'],dur:['30 seconds','45 sec
 let S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'},R=[],mode='in',busy=false;
 const chips=k=>'<div class="chips" role="group" aria-label="'+k+'">'+OPT[k].map(o=>'<button class="chip" type="button" data-k="'+k+'" data-v="'+esc(o)+'" aria-pressed="'+(S[k]===o)+'">'+esc(o)+'</button>').join('')+'</div>';
 const trialEnd=()=>new Date(new Date(S.trial_start||Date.now()).getTime()+3*864e5).toLocaleDateString('en',{month:'short',day:'numeric'});
-const top=()=>'<div class="top"><div class="logo"><i></i>Designverse</div><div class="who">'+esc(S.brand||'')+'</div></div>';
+const hd=()=>'<div class="top"><div class="logo"><i></i>Designverse</div><div class="who">'+esc(S.brand||'')+'</div></div>';
 async function load(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'};R=[];return view()}
@@ -98,14 +98,14 @@ async function load(){
 }
 function view(){
   const app=$('#app'),nav=$('#nav');nav.hidden=true;
-  if(!ok){app.innerHTML=top()+'<div class="clay"><h2>Almost ready</h2><p class="sub">Could not start: '+esc(initErr)+'</p></div>';return}
+  if(!ok){app.innerHTML=hd()+'<div class="clay"><h2>Almost ready</h2><p class="sub">Could not start: '+esc(initErr)+'</p></div>';return}
   if(!S.user){
-    app.innerHTML=top()+'<div class="clay"><h1>'+(mode==='up'?'Create your account':'Welcome back')+'</h1><p class="sub">Free trial. 3 free reels.</p><label for="em">Email</label><input id="em" type="email" autocomplete="email"><label for="pw">Password</label><input id="pw" type="password" autocomplete="'+(mode==='up'?'new-password':'current-password')+'" placeholder="At least 6 characters"><div style="height:18px"></div><button class="btn" id="auth" type="button">'+(mode==='up'?'Sign up':'Sign in')+'</button><p class="sub" id="err" role="alert"></p><button class="btn soft" id="swap" type="button">'+(mode==='up'?'I already have an account':'Create an account')+'</button></div>';return}
+    app.innerHTML=hd()+'<div class="clay"><h1>'+(mode==='up'?'Create your account':'Welcome back')+'</h1><p class="sub">Free trial. 3 free reels.</p><label for="em">Email</label><input id="em" type="email" autocomplete="email"><label for="pw">Password</label><input id="pw" type="password" autocomplete="'+(mode==='up'?'new-password':'current-password')+'" placeholder="At least 6 characters"><div style="height:18px"></div><button class="btn" id="auth" type="button">'+(mode==='up'?'Sign up':'Sign in')+'</button><p class="sub" id="err" role="alert"></p><button class="btn soft" id="swap" type="button">'+(mode==='up'?'I already have an account':'Create an account')+'</button></div>';return}
   if(!S.onboarded){
-    app.innerHTML=top()+'<div class="clay"><h1>Get 3 free reels</h1><p class="sub">Tell us about your brand. That is all we need.</p><label for="b">Brand name</label><input id="b" value="'+esc(S.brand)+'" placeholder="e.g. Aymen Decor" autocomplete="off"><label>Niche</label>'+chips('niche')+'<label>Reel language</label>'+chips('lang')+'<div style="height:20px"></div><button class="btn" id="go" type="button">Start free trial</button><p class="sub" id="err" role="alert"></p></div>';return}
+    app.innerHTML=hd()+'<div class="clay"><h1>Get 3 free reels</h1><p class="sub">Tell us about your brand. That is all we need.</p><label for="b">Brand name</label><input id="b" value="'+esc(S.brand)+'" placeholder="e.g. Aymen Decor" autocomplete="off"><label>Niche</label>'+chips('niche')+'<label>Reel language</label>'+chips('lang')+'<div style="height:20px"></div><button class="btn" id="go" type="button">Start free trial</button><p class="sub" id="err" role="alert"></p></div>';return}
   nav.hidden=false;
   $('#tabs').innerHTML=[['home','Home'],['custom','Customize'],['reels','My reels'],['plan','Plan']].map(t=>'<button type="button" data-tab="'+t[0]+'"'+(S.tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>').join('');
-  const [n,p]=PLANS[S.plan]||PLANS.Starter,ready=R.filter(r=>r.status==='ready').length;let h=top();
+  const [n,p]=PLANS[S.plan]||PLANS.Starter,ready=R.filter(r=>r.status==='ready').length;let h=hd();
   if(S.tab==='home')h+='<div class="clay"><h1>Welcome back, '+esc(S.brand)+'!</h1><p class="sub">'+(ready?'You have '+ready+' reel'+(ready>1?'s':'')+' ready to download.':'Your reels are being prepared. We will email you as soon as they are here.')+'</p><button class="btn" data-tab="reels" type="button">'+(ready?'View my reels':'See progress')+'</button></div>'
    +'<div class="clay"><span class="pill">Free trial</span><h2 style="margin-top:10px">'+esc(S.plan)+' · $'+p+' / month</h2><p class="sub" style="margin:0">'+n+' reels / month · free until '+trialEnd()+'</p><div class="bar"><i style="width:'+Math.max(4,ready/n*100)+'%"></i></div><span class="sub">Delivered '+ready+' / '+n+'</span><div style="height:12px"></div><button class="btn soft" data-tab="plan" type="button">Manage my plan</button></div>'
    +'<div class="grid"><div class="stat"><b>'+ready+'</b><span>Reels delivered</span></div><div class="stat"><b>'+n+'</b><span>Reels per month</span></div><div class="stat"><b>2–7 h</b><span>Delivery time</span></div><div class="stat"><b>'+trialEnd()+'</b><span>Free trial ends</span></div></div>';
@@ -141,7 +141,7 @@ document.addEventListener('click',async e=>{
   }catch(x){err('Network problem. Try again.')}
   busy=false;const bb=document.getElementById(t.id);if(bb)bb.disabled=false;
 });
-$('#app').innerHTML=top()+'<div class="clay"><p class="sub">Loading…</p></div>';
+$('#app').innerHTML=hd()+'<div class="clay"><p class="sub">Loading…</p></div>';
 if(ok)load().catch(e=>{S.user=null;view();const x=$('#err');if(x)x.textContent=e.message});else view();
 </script>
 </body>
