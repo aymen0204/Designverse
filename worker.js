@@ -22,12 +22,19 @@ const FALLBACK = {
 };
 async function copy(p, n) {
   const lang = p.lang || 'Arabic', key = lang === 'French' ? 'fr' : lang === 'English' ? 'en' : 'ar';
-  const prompt = `You write short on-screen copy for a 14-second vertical promo reel.
-Brand: ${p.brand}. Niche: ${p.niche}. Language: ${LANG[lang] || LANG.Arabic}.
-Goal: ${p.goal}. Reel type: ${p.type}. Style: ${p.style}. Wanted call to action: ${p.cta}.
-This is reel ${n} of 3 for the same brand, so use a different angle from a generic one.
-Return JSON only: {"headline":"max 6 words","benefits":["max 4 words","max 4 words","max 4 words"],"cta":"max 3 words"}.
-Never invent prices, discounts, numbers or specific facts about the brand.`;
+  const prompt = `You write on-screen copy for a 16-second vertical promo reel that follows a story: hook, solution, benefits, offer, call to action.
+Write in ${LANG[lang] || LANG.Arabic}.
+BUSINESS FACTS (use only these, never invent prices, discounts, numbers or claims):
+- Brand: ${p.brand}
+- Niche: ${p.niche}
+- What they sell: ${p.sells || 'not given'}
+- Main offer or price: ${p.offer || 'not given'}
+- Target customer: ${p.audience || 'not given'}
+- What makes them different: ${p.diff || 'not given'}
+Reel goal: ${p.goal}. Reel type: ${p.type}. Style: ${p.style}. Wanted call to action: ${p.cta}.
+This is reel ${n} of 3 for the same brand: pick a different angle or customer pain from the other reels.
+Return JSON only:
+{"headline":"a scroll-stopping hook about the customer's need, max 6 words","sub":"one line presenting the product as the solution, max 8 words","benefits":["max 4 words","max 4 words","max 4 words"],"offer":"the main offer in max 5 words, or empty string if none given","cta":"max 3 words"}`;
   try {
     if (!G) throw new Error('no key');
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GM}:generateContent`, {
@@ -37,11 +44,24 @@ Never invent prices, discounts, numbers or specific facts about the brand.`;
     const j = await r.json();
     const o = JSON.parse(j.candidates[0].content.parts[0].text);
     if (typeof o.headline !== 'string' || !Array.isArray(o.benefits) || o.benefits.length < 3 || typeof o.cta !== 'string') throw new Error('bad shape');
-    return {headline: o.headline.slice(0, 60), benefits: o.benefits.slice(0, 3).map(b => String(b).slice(0, 36)), cta: o.cta.slice(0, 24), ai: true};
+    return {headline: o.headline.slice(0, 60), sub: String(o.sub || '').slice(0, 70), benefits: o.benefits.slice(0, 3).map(b => String(b).slice(0, 36)),
+      offer: p.offer ? String(o.offer || p.offer).slice(0, 40) : '', cta: o.cta.slice(0, 24), ai: true};
   } catch (e) {
     console.log('Gemini failed, using fallback:', e.message);
-    return {...FALLBACK[key], ai: false};
+    return {...FALLBACK[key], sub: '', offer: p.offer || '', ai: false};
   }
+}
+
+async function photoUrls(p) {
+  const out = [];
+  for (const pa of (p.photos || []).slice(0, 5)) {
+    try {
+      const r = await fetch(U + '/storage/v1/object/brand-photos/' + pa, {headers: hdr()});
+      if (!r.ok) { console.log('photo missing', pa, r.status); continue }
+      out.push('data:image/jpeg;base64,' + Buffer.from(await r.arrayBuffer()).toString('base64'));
+    } catch (e) { console.log('photo failed', pa) }
+  }
+  return out;
 }
 
 async function render(props, out) {
@@ -56,8 +76,9 @@ async function render(props, out) {
     await page.evaluate(p => {
       const set = (id, v) => { document.getElementById(id).value = v };
       set('brand', p.brand); set('niche', p.niche); set('head', p.head); set('ben', p.ben.join('\n'));
-      set('cta', p.cta); set('con', p.con); set('lang', p.lang); set('pre', String(p.pre));
+      set('sub', p.sub); set('offer', p.offer); set('label', p.label); set('cta', p.cta); set('con', p.con); set('lang', p.lang); set('pre', String(p.pre));
     }, props);
+    await page.evaluate(u => window.setPhotos(u), props.photos);
     const total = await page.evaluate(() => window.TOTAL), frames = Math.round(total * 30);
     const ff = spawn('ffmpeg', ['-y', '-f', 'image2pipe', '-framerate', '30', '-i', '-', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-preset', 'veryfast', '-movflags', '+faststart', out], {stdio: ['pipe', 'ignore', 'inherit']});
     const done = new Promise((res, rej) => { ff.on('close', c => c === 0 ? res() : rej(new Error('ffmpeg exit ' + c))); ff.on('error', rej) });
@@ -78,13 +99,14 @@ async function handle(reel) {
   if (!p) throw new Error('profile missing');
   const n = (reel.settings && reel.settings.n) || 1;
   const txt = await copy(p, n);
-  const props = {brand: p.brand || 'Brand', niche: p.niche || '', head: txt.headline, ben: txt.benefits, cta: txt.cta, con: p.contact || '',
+  const props = {brand: p.brand || 'Brand', niche: p.niche || '', head: txt.headline, sub: txt.sub, ben: txt.benefits, offer: txt.offer, cta: txt.cta, con: p.contact || '',
+    label: (p.sells || p.niche || '').slice(0, 28), photos: await photoUrls(p),
     lang: (p.lang === 'Arabic' || p.lang === 'Darija') ? 'ar' : 'en', pre: PRESET[p.style] ?? 0};
   const out = path.join(os.tmpdir(), reel.id + '.mp4');
   await render(props, out);
   const objPath = reel.user_id + '/' + reel.id + '.mp4';
   await api('/storage/v1/object/reels/' + objPath, {method: 'POST', headers: {'Content-Type': 'video/mp4', 'x-upsert': 'true'}, body: fs.readFileSync(out)});
-  await patch(reel.id, {status: 'ready', video_path: objPath, delivered_at: new Date().toISOString(), script: {headline: txt.headline, benefits: txt.benefits, cta: txt.cta, ai: txt.ai}});
+  await patch(reel.id, {status: 'ready', video_path: objPath, delivered_at: new Date().toISOString(), script: {headline: txt.headline, sub: txt.sub, benefits: txt.benefits, offer: txt.offer, cta: txt.cta, ai: txt.ai, photos: props.photos.length}});
   console.log('ready', reel.id);
 }
 
