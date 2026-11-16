@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Designverse Reels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E6E1FA;--surface:#F1EEFD;--ink:#2D2A4A;--muted:#625E86;--accent:#FF8A5B;--ok:#2FB387;--sd:rgba(120,105,190,.32);--sl:rgba(255,255,255,.9);--id:rgba(120,105,190,.22);--il:rgba(255,255,255,.75);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1D1A33;--surface:#2A2648;--ink:#F0EDFF;--muted:#B4AEDB;--ok:#4FD1A1;--sd:rgba(0,0,0,.5);--sl:rgba(120,110,200,.18);--id:rgba(0,0,0,.35);--il:rgba(150,140,230,.22)}}
+:root[data-theme="dark"]{--bg:#1D1A33;--surface:#2A2648;--ink:#F0EDFF;--muted:#B4AEDB;--ok:#4FD1A1;--sd:rgba(0,0,0,.5);--sl:rgba(120,110,200,.18);--id:rgba(0,0,0,.35);--il:rgba(150,140,230,.22)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 Nunito,system-ui,sans-serif}
+h1,h2,h3{font-family:Fredoka,sans-serif;margin:0;line-height:1.15}
+.wrap{max-width:520px;margin:0 auto;padding:14px 16px 120px}
+.clay{background:var(--surface);border-radius:28px;padding:20px;margin-bottom:18px;box-shadow:10px 10px 22px var(--sd),-8px -8px 18px var(--sl),inset -5px -5px 10px var(--id),inset 5px 5px 10px var(--il)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.logo{font:700 22px Fredoka;display:flex;gap:8px;align-items:center}.logo i{width:28px;height:28px;border-radius:10px;background:var(--accent);box-shadow:3px 3px 6px var(--sd),inset -2px -2px 5px #0002,inset 2px 2px 5px #fff6}
+.who{color:var(--muted);font-size:14px}
+h1{font-size:30px}h2{font-size:20px;margin-bottom:6px}.sub{color:var(--muted);margin:4px 0 14px}
+.btn{font:600 17px Fredoka;color:#fff;background:var(--accent);border:0;border-radius:999px;padding:14px 24px;width:100%;cursor:pointer;box-shadow:7px 7px 14px var(--sd),-5px -5px 12px var(--sl),inset -4px -4px 8px #0003,inset 4px 4px 8px #fff5}
+.btn:active{transform:translateY(1px)}.btn.soft{background:var(--surface);color:var(--ink);box-shadow:7px 7px 14px var(--sd),-5px -5px 12px var(--sl),inset -3px -3px 7px var(--id),inset 3px 3px 7px var(--il)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px;color:var(--muted)}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:0;border-radius:16px;padding:13px 14px;box-shadow:inset 4px 4px 8px var(--id),inset -4px -4px 8px var(--il)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{font:600 15px Nunito;color:var(--ink);background:var(--surface);border:0;border-radius:999px;padding:10px 16px;cursor:pointer;box-shadow:4px 4px 9px var(--sd),-3px -3px 7px var(--sl)}
+.chip[aria-pressed=true]{background:var(--accent);color:#fff;box-shadow:inset 3px 3px 7px #0003,inset -2px -2px 5px #fff4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat{background:var(--surface);border-radius:22px;padding:16px;box-shadow:6px 6px 14px var(--sd),-5px -5px 11px var(--sl),inset -3px -3px 7px var(--id),inset 3px 3px 7px var(--il)}
+.stat b{display:block;font:700 28px Fredoka}.stat span{color:var(--muted);font-size:14px}
+.bar{height:12px;border-radius:8px;background:var(--bg);box-shadow:inset 3px 3px 6px var(--id);overflow:hidden;margin:10px 0 4px}.bar i{display:block;height:100%;background:var(--accent);border-radius:8px}
+.pill{display:inline-block;font:600 13px Fredoka;background:var(--bg);padding:3px 12px;border-radius:99px;box-shadow:inset 2px 2px 5px var(--id)}
+.reel{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.thumb{width:62px;aspect-ratio:9/16;border-radius:16px;background:linear-gradient(120deg,var(--bg),var(--surface),var(--bg));background-size:200% 100%;animation:sh 1.6s linear infinite;box-shadow:inset 2px 2px 6px var(--id)}
+@keyframes sh{to{background-position:-200% 0}}@media (prefers-reduced-motion:reduce){.thumb{animation:none}}
+.plan{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:start;font:inherit;color:var(--ink);border:0;margin-bottom:12px;padding:16px;border-radius:22px;background:var(--surface);cursor:pointer;box-shadow:6px 6px 14px var(--sd),-5px -5px 11px var(--sl)}
+.plan[aria-pressed=true]{box-shadow:inset 4px 4px 9px var(--id),inset -4px -4px 9px var(--il),0 0 0 3px var(--accent)}
+.plan b{font:700 18px Fredoka}.plan span{color:var(--muted);font-size:14px}.plan em{font:700 22px Fredoka;font-style:normal}
+nav{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg)}
+nav div{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px;border-radius:26px;background:var(--surface);box-shadow:0 -4px 20px var(--sd),inset 3px 3px 7px var(--il)}
+nav button{border:0;background:none;font:600 13px Fredoka;color:var(--muted);padding:10px 4px;border-radius:18px;cursor:pointer}
+nav button[aria-current=page]{background:var(--accent);color:#fff;box-shadow:inset -3px -3px 6px #0003,inset 3px 3px 6px #fff4}
+a.link{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<nav id="nav" hidden><div id="tabs"></div></nav>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL='https://bfxrhbnjlrjpwtvoollf.supabase.co', SUPABASE_KEY='sb_publishable_maATwmr4IXXqNxUp8LG1LA_ZlQeXb37';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ok=typeof supabase!=='undefined'&&!SUPABASE_URL.startsWith('PASTE');
+const sb=ok?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+const PLANS={Starter:[10,9],Growth:[30,24],Pro:[60,39]};
+const OPT={lang:['Arabic','Darija','French','English'],dur:['30 seconds','45 seconds','1 minute'],type:['Product showcase','Promo / offer','Tips & tutorial','Storytelling','Customer testimonial','Behind the scenes'],goal:['Sell a product','Promote an offer','Brand awareness','Get more followers'],style:['Modern & clean','Luxury','Fun & colorful','Minimal','Bold & energetic'],cta:['Order now','Send us a message','Link in bio','Call or WhatsApp us','No call to action'],niche:['Fashion','Cosmetics','Food','Home decor','Tech & apps','Other']};
+let S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'},R=[],mode='in',busy=false;
+const chips=k=>'<div class="chips" role="group" aria-label="'+k+'">'+OPT[k].map(o=>'<button class="chip" type="button" data-k="'+k+'" data-v="'+esc(o)+'" aria-pressed="'+(S[k]===o)+'">'+esc(o)+'</button>').join('')+'</div>';
+const trialEnd=()=>new Date(new Date(S.trial_start||Date.now()).getTime()+3*864e5).toLocaleDateString('en',{month:'short',day:'numeric'});
+const top=()=>'<div class="top"><div class="logo"><i></i>Designverse</div><div class="who">'+esc(S.brand||'')+'</div></div>';
+async function load(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'};R=[];return view()}
+  const {data:p}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  S={...S,...(p||{}),user:session.user};
+  const {data:r}=await sb.from('reels').select('*').order('created_at');R=r||[];view();
+}
+function view(){
+  const app=$('#app'),nav=$('#nav');nav.hidden=true;
+  if(!ok){app.innerHTML=top()+'<div class="clay"><h2>Almost ready</h2><p class="sub">Add your Supabase project URL and anon key at the top of this file (see SETUP.md).</p></div>';return}
+  if(!S.user){
+    app.innerHTML=top()+'<div class="clay"><h1>'+(mode==='up'?'Create your account':'Welcome back')+'</h1><p class="sub">Free trial. 3 free reels.</p><label for="em">Email</label><input id="em" type="email" autocomplete="email"><label for="pw">Password</label><input id="pw" type="password" autocomplete="'+(mode==='up'?'new-password':'current-password')+'" placeholder="At least 6 characters"><div style="height:18px"></div><button class="btn" id="auth" type="button">'+(mode==='up'?'Sign up':'Sign in')+'</button><p class="sub" id="err" role="alert"></p><button class="btn soft" id="swap" type="button">'+(mode==='up'?'I already have an account':'Create an account')+'</button></div>';return}
+  if(!S.onboarded){
+    app.innerHTML=top()+'<div class="clay"><h1>Get 3 free reels</h1><p class="sub">Tell us about your brand. That is all we need.</p><label for="b">Brand name</label><input id="b" value="'+esc(S.brand)+'" placeholder="e.g. Aymen Decor" autocomplete="off"><label>Niche</label>'+chips('niche')+'<label>Reel language</label>'+chips('lang')+'<div style="height:20px"></div><button class="btn" id="go" type="button">Start free trial</button><p class="sub" id="err" role="alert"></p></div>';return}
+  nav.hidden=false;
+  $('#tabs').innerHTML=[['home','Home'],['custom','Customize'],['reels','My reels'],['plan','Plan']].map(t=>'<button type="button" data-tab="'+t[0]+'"'+(S.tab===t[0]?' aria-current="page"':'')+'>'+t[1]+'</button>').join('');
+  const [n,p]=PLANS[S.plan]||PLANS.Starter,ready=R.filter(r=>r.status==='ready').length;let h=top();
+  if(S.tab==='home')h+='<div class="clay"><h1>Welcome back, '+esc(S.brand)+'!</h1><p class="sub">'+(ready?'You have '+ready+' reel'+(ready>1?'s':'')+' ready to download.':'Your reels are being prepared. We will email you as soon as they are here.')+'</p><button class="btn" data-tab="reels" type="button">'+(ready?'View my reels':'See progress')+'</button></div>'
+   +'<div class="clay"><span class="pill">Free trial</span><h2 style="margin-top:10px">'+esc(S.plan)+' · $'+p+' / month</h2><p class="sub" style="margin:0">'+n+' reels / month · free until '+trialEnd()+'</p><div class="bar"><i style="width:'+Math.max(4,ready/n*100)+'%"></i></div><span class="sub">Delivered '+ready+' / '+n+'</span><div style="height:12px"></div><button class="btn soft" data-tab="plan" type="button">Manage my plan</button></div>'
+   +'<div class="grid"><div class="stat"><b>'+ready+'</b><span>Reels delivered</span></div><div class="stat"><b>'+n+'</b><span>Reels per month</span></div><div class="stat"><b>2–7 h</b><span>Delivery time</span></div><div class="stat"><b>'+trialEnd()+'</b><span>Free trial ends</span></div></div>';
+  if(S.tab==='custom')h+='<div class="clay"><h1>Customize your reels</h1><p class="sub">Pick what you want. You can change it anytime.</p><label>Duration</label>'+chips('dur')+'<label>Reel type</label>'+chips('type')+'<label>Goal</label>'+chips('goal')+'<label>Style</label>'+chips('style')+'<label>Language</label>'+chips('lang')+'<label>Call to action at the end</label>'+chips('cta')+'<label for="c">WhatsApp, website or shop address (optional)</label><input id="c" value="'+esc(S.contact)+'" placeholder="+213 6 00 00 00 00"><div style="height:18px"></div><button class="btn" id="sv" type="button">Save my settings</button><p class="sub" id="ok" role="status"></p></div>';
+  if(S.tab==='reels'){h+='<div class="clay"><h1>Your reels</h1><p class="sub">Ready to download and post anywhere.</p>';
+    R.forEach((r,i)=>{const rd=r.status==='ready';h+='<div class="reel"><div class="thumb"'+(rd?' style="animation:none;background:var(--accent)"':'')+'></div><div style="flex:1"><h3>Reel '+(i+1)+'</h3><span class="sub">'+(rd?'Ready':r.status==='failed'?'Something went wrong. We are fixing it.':'Being prepared · by about '+new Date(r.due_at).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}))+'</span></div>'+(rd&&r.video_path?'<button class="chip" type="button" data-dl="'+esc(r.video_path)+'">Download</button>':'')+'</div>'});
+    h+='<p class="sub">We will email you when they are ready.</p></div>'}
+  if(S.tab==='plan'){h+='<div class="clay"><h1>Your plan</h1><p class="sub">Free for 3 days, then billed monthly. Cancel anytime.</p>'+Object.entries(PLANS).map(([k,v])=>'<button class="plan" type="button" data-plan="'+k+'" aria-pressed="'+(S.plan===k)+'"><div><b>'+k+'</b><br><span>'+v[0]+' reels / month</span></div><em>$'+v[1]+'</em></button>').join('')+'<p class="sub">Payment is not connected yet.</p><button class="btn soft" id="out" type="button">Sign out</button></div>'}
+  app.innerHTML=h;
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-k],[data-tab],[data-plan],[data-dl],button[id]');if(!t||busy)return;
+  const err=m=>{const x=$('#err');if(x)x.textContent=m};
+  if(t.dataset.k){const b=$('#b');if(b)S.brand=b.value;S[t.dataset.k]=t.dataset.v;const y=scrollY;view();scrollTo(0,y);return}
+  if(t.dataset.tab){S.tab=t.dataset.tab;view();scrollTo(0,0);return}
+  if(t.dataset.plan){S.plan=t.dataset.plan;view();await sb.from('profiles').update({plan:S.plan}).eq('id',S.user.id);return}
+  if(t.dataset.dl){const {data,error}=await sb.storage.from('reels').createSignedUrl(t.dataset.dl,3600);if(data)window.open(data.signedUrl,'_blank','noopener');return}
+  if(t.id==='swap'){mode=mode==='up'?'in':'up';view();return}
+  busy=true;t.disabled=true;
+  try{
+    if(t.id==='auth'){
+      const em=$('#em').value.trim(),pw=$('#pw').value;
+      const {data,error}=mode==='up'?await sb.auth.signUp({email:em,password:pw}):await sb.auth.signInWithPassword({email:em,password:pw});
+      if(error)err(error.message);else if(!data.session)err('Check your email to confirm your account, then sign in.');else await load();
+    }else if(t.id==='go'){
+      const b=$('#b').value.trim();if(!b||!S.niche){err('Please enter your brand name and pick a niche.')}
+      else{const {error}=await sb.rpc('start_trial',{p_brand:b,p_niche:S.niche,p_lang:S.lang});if(error)err(error.message);else await load()}
+    }else if(t.id==='sv'){
+      S.contact=$('#c').value;
+      const {error}=await sb.from('profiles').update({lang:S.lang,dur:S.dur,type:S.type,goal:S.goal,style:S.style,cta:S.cta,contact:S.contact}).eq('id',S.user.id);
+      $('#ok').textContent=error?'Could not save. Try again.':'Saved. Your next reels will use these settings.';
+    }else if(t.id==='out'){await sb.auth.signOut();await load()}
+  }catch(x){err('Network problem. Try again.')}
+  busy=false;const bb=document.getElementById(t.id);if(bb)bb.disabled=false;
+});
+if(ok)load();else view();
+</script>
+</body>
+</html>
