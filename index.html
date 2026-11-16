@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Designverse Reels</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{--bg:#E6E1FA;--surface:#F1EEFD;--ink:#2D2A4A;--muted:#625E86;--accent:#FF8A5B;--ok:#2FB387;--sd:rgba(120,105,190,.32);--sl:rgba(255,255,255,.9);--id:rgba(120,105,190,.22);--il:rgba(255,255,255,.75);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1D1A33;--surface:#2A2648;--ink:#F0EDFF;--muted:#B4AEDB;--ok:#4FD1A1;--sd:rgba(0,0,0,.5);--sl:rgba(120,110,200,.18);--id:rgba(0,0,0,.35);--il:rgba(150,140,230,.22)}}
@@ -48,15 +48,41 @@ a.link{color:var(--ink);font-weight:700}
 <body>
 <div class="wrap" id="app"></div>
 <nav id="nav" hidden><div id="tabs"></div></nav>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 window.addEventListener('error',e=>{const a=document.getElementById('app');if(a){a.textContent='';const d=document.createElement('div');d.className='clay';d.textContent='Error: '+e.message+' (line '+e.lineno+')';a.append(d)}});
 const SUPABASE_URL='https://bfxrhbnjlrjpwtvoollf.supabase.co', SUPABASE_KEY='sb_publishable_maATwmr4IXXqNxUp8LG1LA_ZlQeXb37';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let sb=null,initErr='';
-try{if(typeof supabase==='undefined')initErr='Library did not load';else sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}catch(e){initErr=e.message}
-const ok=!!sb;
+let initErr='';
+let sess=null;try{sess=JSON.parse(localStorage.getItem('dvs'))}catch(_){}
+const saveSess=v=>{sess=v;try{v?localStorage.setItem('dvs',JSON.stringify(v)):localStorage.removeItem('dvs')}catch(_){}};
+const hdr=t=>({'apikey':SUPABASE_KEY,'Content-Type':'application/json',...(t?{'Authorization':'Bearer '+t}:{})});
+async function refresh(){try{const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:hdr(),body:JSON.stringify({refresh_token:sess.refresh_token})});if(!r.ok)return false;const j=await r.json();saveSess({access_token:j.access_token,refresh_token:j.refresh_token,user:j.user});return true}catch(_){return false}}
+async function jf(path,opt={},auth=true){
+  const go=()=>fetch(SUPABASE_URL+path,{...opt,headers:{...hdr(auth&&sess?sess.access_token:null),...(opt.headers||{})}});
+  let r=await go();
+  if(r.status===401&&auth&&sess&&sess.refresh_token&&await refresh())r=await go();
+  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(_){}
+  if(!r.ok)throw new Error((j&&(j.msg||j.message||j.error_description||j.error))||('HTTP '+r.status));
+  return j;
+}
+async function run(st){try{const q='?'+(st.m==='GET'?'select=*&':'')+st.f.join('&')+st.o;
+  const j=await jf('/rest/v1/'+st.t+q,{method:st.m,headers:st.m==='PATCH'?{Prefer:'return=minimal'}:{},body:st.b?JSON.stringify(st.b):undefined});
+  return{data:st.one?((j&&j[0])||null):j,error:null}}catch(e){return{data:null,error:e}}}
+const sb={
+  auth:{
+    async getSession(){return{data:{session:sess}}},
+    async signInWithPassword(o){try{const j=await jf('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify(o)},false);saveSess(j);return{data:{session:j},error:null}}catch(e){return{data:{},error:e}}},
+    async signUp(o){try{const j=await jf('/auth/v1/signup',{method:'POST',body:JSON.stringify(o)},false);if(j&&j.access_token)saveSess(j);return{data:{session:j&&j.access_token?j:null},error:null}}catch(e){return{data:{},error:e}}},
+    async signOut(){try{await jf('/auth/v1/logout',{method:'POST'})}catch(_){}saveSess(null);return{}}
+  },
+  from(t){const st={t,f:[],o:'',m:'GET',b:null,one:false};
+    const b={select(){return b},eq(k,v){st.f.push(k+'=eq.'+encodeURIComponent(v));return b},order(c){st.o='&order='+c+'.asc';return b},single(){st.one=true;return b},update(o){st.m='PATCH';st.b=o;return b},then(res,rej){return run(st).then(res,rej)}};
+    return b},
+  async rpc(n,a){try{await jf('/rest/v1/rpc/'+n,{method:'POST',body:JSON.stringify(a)});return{error:null}}catch(e){return{error:e}}},
+  storage:{from(){return{async createSignedUrl(p,sec){try{const j=await jf('/storage/v1/object/sign/reels/'+p,{method:'POST',body:JSON.stringify({expiresIn:sec})});return{data:{signedUrl:SUPABASE_URL+'/storage/v1'+j.signedURL},error:null}}catch(e){return{data:null,error:e}}}}}}
+};
+const ok=true;
 const PLANS={Starter:[10,9],Growth:[30,24],Pro:[60,39]};
 const OPT={lang:['Arabic','Darija','French','English'],dur:['30 seconds','45 seconds','1 minute'],type:['Product showcase','Promo / offer','Tips & tutorial','Storytelling','Customer testimonial','Behind the scenes'],goal:['Sell a product','Promote an offer','Brand awareness','Get more followers'],style:['Modern & clean','Luxury','Fun & colorful','Minimal','Bold & energetic'],cta:['Order now','Send us a message','Link in bio','Call or WhatsApp us','No call to action'],niche:['Fashion','Cosmetics','Food','Home decor','Tech & apps','Other']};
 let S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'},R=[],mode='in',busy=false;
