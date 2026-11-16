@@ -51,6 +51,10 @@ nav{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-
 nav div{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 nav button{border:0;background:none;font:700 13px "Plus Jakarta Sans",sans-serif;color:var(--muted);padding:11px 4px;border-radius:12px;cursor:pointer}
 nav button[aria-current=page]{background:var(--tint);color:var(--violet)}
+
+.photos{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.th{position:relative;width:74px;height:74px}.th img{width:100%;height:100%;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--tint)}
+.th button{position:absolute;top:-7px;right:-7px;width:26px;height:26px;border-radius:50%;border:0;background:var(--ink);color:var(--card);cursor:pointer;font-size:16px;line-height:1}
 a.link{color:var(--violet);font-weight:700}
 </style>
 </head>
@@ -89,12 +93,19 @@ const sb={
     const b={select(){return b},eq(k,v){st.f.push(k+'=eq.'+encodeURIComponent(v));return b},order(c){st.o='&order='+c+'.asc';return b},single(){st.one=true;return b},update(o){st.m='PATCH';st.b=o;return b},then(res,rej){return run(st).then(res,rej)}};
     return b},
   async rpc(n,a){try{await jf('/rest/v1/rpc/'+n,{method:'POST',body:JSON.stringify(a)});return{error:null}}catch(e){return{error:e}}},
-  storage:{from(){return{async createSignedUrl(p,sec){try{const j=await jf('/storage/v1/object/sign/reels/'+p,{method:'POST',body:JSON.stringify({expiresIn:sec})});return{data:{signedUrl:SUPABASE_URL+'/storage/v1'+j.signedURL},error:null}}catch(e){return{data:null,error:e}}}}}}
+  storage:{from(bk){return{async createSignedUrl(p,sec){try{const j=await jf('/storage/v1/object/sign/'+bk+'/'+p,{method:'POST',body:JSON.stringify({expiresIn:sec})});return{data:{signedUrl:SUPABASE_URL+'/storage/v1'+j.signedURL},error:null}}catch(e){return{data:null,error:e}}}}}}
 };
 const ok=true;
 const PLANS={Starter:[10,9],Growth:[30,24],Pro:[60,39]};
 const OPT={lang:['Arabic','Darija','French','English'],dur:['30 seconds','45 seconds','1 minute'],type:['Product showcase','Promo / offer','Tips & tutorial','Storytelling','Customer testimonial','Behind the scenes'],goal:['Sell a product','Promote an offer','Brand awareness','Get more followers'],style:['Modern & clean','Luxury','Fun & colorful','Minimal','Bold & energetic'],cta:['Order now','Send us a message','Link in bio','Call or WhatsApp us','No call to action'],niche:['Fashion','Cosmetics','Food','Home decor','Tech & apps','Other']};
 let S={tab:'home',user:null,onboarded:false,plan:'Starter',lang:'Arabic'},R=[],mode='in',busy=false;
+const bizCard=()=>{const ph=S.photos||[];return '<div class="clay"><h1>About your business</h1><p class="sub">The more we know, the better your reels. The AI writes only from what you tell it here.</p>'
++'<label for="sells">What do you sell?</label><input id="sells" value="'+esc(S.sells)+'" placeholder="e.g. laser-cut wall art for living rooms">'
++'<label for="offerin">Main offer or price</label><input id="offerin" value="'+esc(S.offer)+'" placeholder="e.g. 2 pieces for 4500 DA">'
++'<label for="aud">Who is it for?</label><input id="aud" value="'+esc(S.audience)+'" placeholder="e.g. anime fans decorating their room">'
++'<label for="diffin">What makes you different?</label><input id="diffin" value="'+esc(S.diff)+'" placeholder="e.g. made to order, ships to all 58 wilayas">'
++'<label>Product photos ('+ph.length+'/5)</label><div class="photos">'+ph.map(p=>'<div class="th"><img data-p="'+esc(p)+'" alt="Product photo"><button type="button" data-rm="'+esc(p)+'" aria-label="Remove photo">×</button></div>').join('')+(ph.length<5?'<button class="chip" id="addph" type="button">+ Add photo</button>':'')+'</div><input id="pf" type="file" accept="image/*" multiple hidden>'
++'<div style="height:18px"></div><button class="btn" id="svb" type="button">Save business info</button><p class="sub" id="okb" role="status"></p></div>'};
 const chips=k=>'<div class="chips" role="group" aria-label="'+k+'">'+OPT[k].map(o=>'<button class="chip" type="button" data-k="'+k+'" data-v="'+esc(o)+'" aria-pressed="'+(S[k]===o)+'">'+esc(o)+'</button>').join('')+'</div>';
 const trialEnd=()=>new Date(new Date(S.trial_start||Date.now()).getTime()+3*864e5).toLocaleDateString('en',{month:'short',day:'numeric'});
 const hd=()=>'<div class="top"><div class="logo"><i></i>Designverse</div><div class="who">'+esc(S.brand||'')+'</div></div>';
@@ -117,22 +128,25 @@ function view(){
   const [n,p]=PLANS[S.plan]||PLANS.Starter,ready=R.filter(r=>r.status==='ready').length;let h=hd();
   if(S.tab==='home')h+='<div class="clay hero"><h1>Welcome back, <span class="v">'+esc(S.brand)+'</span>!</h1><p class="sub">'+(ready?'You have '+ready+' reel'+(ready>1?'s':'')+' ready to download.':'Your reels are being prepared. We will email you as soon as they are here.')+'</p><button class="btn" data-tab="reels" type="button">'+(ready?'View my reels':'See progress')+'</button></div>'
    +'<div class="clay"><span class="pill">Free trial</span><h2 style="margin-top:10px">'+esc(S.plan)+' · $'+p+' / month</h2><p class="sub" style="margin:0">'+n+' reels / month · free until '+trialEnd()+'</p><div class="bar"><i style="width:'+Math.max(4,ready/n*100)+'%"></i></div><span class="sub">Delivered '+ready+' / '+n+'</span><div style="height:12px"></div><button class="btn soft" data-tab="plan" type="button">Manage my plan</button></div>'
-   +'<div class="grid"><div class="stat"><b>'+ready+'</b><span>Reels delivered</span></div><div class="stat"><b>'+n+'</b><span>Reels per month</span></div><div class="stat"><b>2–7 h</b><span>Delivery time</span></div><div class="stat"><b>'+trialEnd()+'</b><span>Free trial ends</span></div></div>';
-  if(S.tab==='custom')h+='<div class="clay"><h1>Customize your reels</h1><p class="sub">Pick what you want. You can change it anytime.</p><label>Duration</label>'+chips('dur')+'<label>Reel type</label>'+chips('type')+'<label>Goal</label>'+chips('goal')+'<label>Style</label>'+chips('style')+'<label>Language</label>'+chips('lang')+'<label>Call to action at the end</label>'+chips('cta')+'<label for="c">WhatsApp, website or shop address (optional)</label><input id="c" value="'+esc(S.contact)+'" placeholder="+213 6 00 00 00 00"><div style="height:18px"></div><button class="btn" id="sv" type="button">Save my settings</button><p class="sub" id="ok" role="status"></p></div>';
+   +(S.sells?'':'<div class="clay"><h2>Make your reels better</h2><p class="sub">Tell us what you sell and add product photos.</p><button class="btn soft" data-tab="custom" type="button">Add business info</button></div>')+'<div class="grid"><div class="stat"><b>'+ready+'</b><span>Reels delivered</span></div><div class="stat"><b>'+n+'</b><span>Reels per month</span></div><div class="stat"><b>2–7 h</b><span>Delivery time</span></div><div class="stat"><b>'+trialEnd()+'</b><span>Free trial ends</span></div></div>';
+  if(S.tab==='custom')h+=bizCard()+'<div class="clay"><h1>Customize your reels</h1><p class="sub">Pick what you want. You can change it anytime.</p><label>Duration</label>'+chips('dur')+'<label>Reel type</label>'+chips('type')+'<label>Goal</label>'+chips('goal')+'<label>Style</label>'+chips('style')+'<label>Language</label>'+chips('lang')+'<label>Call to action at the end</label>'+chips('cta')+'<label for="c">WhatsApp, website or shop address (optional)</label><input id="c" value="'+esc(S.contact)+'" placeholder="+213 6 00 00 00 00"><div style="height:18px"></div><button class="btn" id="sv" type="button">Save my settings</button><p class="sub" id="ok" role="status"></p></div>';
   if(S.tab==='reels'){h+='<div class="clay"><h1>Your reels</h1><p class="sub">Ready to download and post anywhere.</p>';
     R.forEach((r,i)=>{const rd=r.status==='ready';h+='<div class="reel"><div class="thumb"'+(rd?' style="animation:none;background:var(--accent)"':'')+'></div><div style="flex:1"><h3>Reel '+(i+1)+'</h3><span class="sub">'+(rd?'Ready':r.status==='failed'?'Something went wrong. We are fixing it.':'Being prepared · by about '+new Date(r.due_at).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}))+'</span></div>'+(rd&&r.video_path?'<button class="chip" type="button" data-dl="'+esc(r.video_path)+'">Download</button>':'')+'</div>'});
     h+='<p class="sub">We will email you when they are ready.</p></div>'}
   if(S.tab==='plan'){h+='<div class="clay"><h1>Your plan</h1><p class="sub">Free for 3 days, then billed monthly. Cancel anytime.</p>'+Object.entries(PLANS).map(([k,v])=>'<button class="plan" type="button" data-plan="'+k+'" aria-pressed="'+(S.plan===k)+'"><div><b>'+k+'</b><br><span>'+v[0]+' reels / month</span></div><em>$'+v[1]+'</em></button>').join('')+'<p class="sub">Payment is not connected yet.</p><button class="btn soft" id="out" type="button">Sign out</button></div>'}
   app.innerHTML=h;
+  document.querySelectorAll('img[data-p]').forEach(async im=>{const r=await sb.storage.from('brand-photos').createSignedUrl(im.dataset.p,3600);if(r.data)im.src=r.data.signedUrl});
 }
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-k],[data-tab],[data-plan],[data-dl],button[id]');if(!t||busy)return;
+  const t=e.target.closest('[data-k],[data-tab],[data-plan],[data-dl],button[id],[data-rm]');if(!t||busy)return;
   const err=m=>{const x=$('#err');if(x)x.textContent=m};
   if(t.dataset.k){const b=$('#b');if(b)S.brand=b.value;S[t.dataset.k]=t.dataset.v;const y=scrollY;view();scrollTo(0,y);return}
   if(t.dataset.tab){S.tab=t.dataset.tab;view();scrollTo(0,0);return}
   if(t.dataset.plan){S.plan=t.dataset.plan;view();await sb.from('profiles').update({plan:S.plan}).eq('id',S.user.id);return}
   if(t.dataset.dl){const {data,error}=await sb.storage.from('reels').createSignedUrl(t.dataset.dl,3600);if(data)window.open(data.signedUrl,'_blank','noopener');return}
   if(t.id==='swap'){mode=mode==='up'?'in':'up';view();return}
+  if(t.id==='addph'){$('#pf').click();return}
+  if(t.dataset.rm){busy=true;try{await jf('/storage/v1/object/brand-photos/'+t.dataset.rm,{method:'DELETE'}).catch(()=>{});S.photos=(S.photos||[]).filter(x=>x!==t.dataset.rm);await sb.from('profiles').update({photos:S.photos}).eq('id',S.user.id);view()}finally{busy=false}return}
   busy=true;t.disabled=true;
   try{
     if(t.id==='auth'){
@@ -146,11 +160,33 @@ document.addEventListener('click',async e=>{
       S.contact=$('#c').value;
       const {error}=await sb.from('profiles').update({lang:S.lang,dur:S.dur,type:S.type,goal:S.goal,style:S.style,cta:S.cta,contact:S.contact}).eq('id',S.user.id);
       $('#ok').textContent=error?'Could not save. Try again.':'Saved. Your next reels will use these settings.';
+    }else if(t.id==='svb'){
+      const v=id=>$('#'+id).value.trim().slice(0,200);S.sells=v('sells');S.offer=v('offerin');S.audience=v('aud');S.diff=v('diffin');
+      const {error}=await sb.from('profiles').update({sells:S.sells,offer:S.offer,audience:S.audience,diff:S.diff}).eq('id',S.user.id);
+      $('#okb').textContent=error?'Could not save. Did you run schema_v2.sql in Supabase?':'Saved. Your next reels will use this.';
     }else if(t.id==='out'){await sb.auth.signOut();await load()}
   }catch(x){err('Network problem. Try again.')}
   busy=false;const bb=document.getElementById(t.id);if(bb)bb.disabled=false;
 });
 $('#app').innerHTML=hd()+'<div class="clay"><p class="sub">Loading…</p></div>';
+document.addEventListener('change',async e=>{
+  if(e.target.id!=='pf')return;const files=[...e.target.files];if(!files.length||busy)return;busy=true;
+  const msgEl=$('#okb');const say=m=>{if(msgEl)msgEl.textContent=m};
+  try{
+    for(const f of files){
+      if((S.photos||[]).length>=5)break;say('Uploading photo…');
+      const bmp=await createImageBitmap(f),sc=Math.min(1,1080/Math.max(bmp.width,bmp.height)),c=document.createElement('canvas');
+      c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+      const path=S.user.id+'/'+Date.now()+Math.random().toString(36).slice(2,6)+'.jpg';
+      await jf('/storage/v1/object/brand-photos/'+path,{method:'POST',headers:{'Content-Type':'image/jpeg','x-upsert':'true'},body:blob});
+      S.photos=[...(S.photos||[]),path];
+      const {error}=await sb.from('profiles').update({photos:S.photos}).eq('id',S.user.id);if(error)throw error;
+    }
+    view();
+  }catch(x){say('Upload failed: '+(x.message||'try again'))}
+  busy=false;
+});
 if(ok)load().catch(e=>{S.user=null;view();const x=$('#err');if(x)x.textContent=e.message});else view();
 </script>
 </body>
