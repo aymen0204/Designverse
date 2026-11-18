@@ -1,1 +1,1 @@
-{"name":"designverse-worker","private":true,"dependencies":{"playwright":"1.48.2"}}
+{"name":"designverse-worker","private":true,"dependencies":{"playwright":"1.48.2","nodemailer":"6.9.15"}}
