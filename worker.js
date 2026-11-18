@@ -239,7 +239,12 @@ async function main() {
     try {
       const r = await handle(reel);
       if (r && r.email) { const d = done.get(r.uid) || {...r, n: 0}; d.n++; done.set(r.uid, d) }
-    } catch (e) { console.error('failed', reel.id, e.message); await patch(reel.id, {status: 'failed', script: {error: String(e.message).slice(0, 300)}}).catch(() => {}) }
+    } catch (e) {
+      console.error('failed', reel.id, e.message);
+      const att = (reel.attempts || 0) + 1, err = {error: String(e.message).slice(0, 300)};
+      // retry automatically up to 3 times, 20 minutes apart
+      await patch(reel.id, att < 3 ? {status: 'queued', attempts: att, due_at: new Date(Date.now() + 20 * 60000).toISOString(), script: err} : {status: 'failed', attempts: att, script: err}).catch(() => {});
+    }
   }
   await mailUsers(done);
 }
